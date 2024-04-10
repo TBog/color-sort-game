@@ -1,0 +1,30 @@
+{% macro print_bottle(colors) %}
+	{% set content = colors | default(['_', '_', '_', '_'], true) %}
+	{% set height = content|length %}
+	<div class="bottle">
+		<form>
+		<table>
+			{% for i in range(height) %}
+			<tr>
+				<td>
+					{{ print_bottle_content(content[i]) }}
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<button type="button">[&nbsp;]</button>
+		<input name="bottle" type="hidden" value="" />
+		</form>
+	</div>
+{% endmacro %}
+
+{% macro print_bottle_content(color) %}
+<span class="bottleColor" hx-trigger="click" hx-get="/choose_color" hx-include="next input" hx-swap="innerHTML" hx-target="closest td" style="color:{{ color if color != '_' else 'transparent' }}">&#x25A0;</span>
+<input name="color" type="hidden" value="{{ color }}" />
+{% endmacro %}
+
+{% macro print_preset(bottles) %}
+	{% for bottle in bottles %}
+		{{ print_bottle(bottle) }}
+	{% endfor %}
+{% endmacro %}

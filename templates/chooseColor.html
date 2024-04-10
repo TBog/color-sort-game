@@ -1,0 +1,20 @@
+<form>
+<select class="selectpicker show-tick" name="color" hx-trigger="change" hx-get="/set_color" hx-swap="outerHTML" hx-target="closest form" hx-include="closest select">
+	<option style="background: #666;	color: #fff;" value="_" {{'selected' if not color}}>?&nbsp;?&nbsp;?</option>
+	<option style="background: #87CEEB; color: #fff;" value="#87CEEB" {{'selected' if color=='#87CEEB'}}>SkyBlue</option>
+	<option style="background: #00F;	color: #fff;" value="#00F"	  {{'selected' if color=='#00F'	  }}>Blue</option>
+	<option style="background: #FFA500; color: #fff;" value="#FFA500" {{'selected' if color=='#FFA500'}}>Orange</option>
+	<option style="background: #FF4500; color: #fff;" value="#FF4500" {{'selected' if color=='#FF4500'}}>OrangeRed</option>
+	<option style="background: #8B0000; color: #fff;" value="#8B0000" {{'selected' if color=='#8B0000'}}>DarkRed</option>
+	<option style="background: #FF69B4; color: #fff;" value="#FF69B4" {{'selected' if color=='#FF69B4'}}>HotPink</option>
+	<option style="background: #FFFFF0; color: #666;" value="#FFFFF0" {{'selected' if color=='#FFFFF0'}}>Ivory</option>
+	<option style="background: #E6E6FA; color: #666;" value="#E6E6FA" {{'selected' if color=='#E6E6FA'}}>Lavender</option>
+	<option style="background: #FF0;	color: #666;" value="#FF0"	  {{'selected' if color=='#FF0'	  }}>Yellow</option>
+	<option style="background: #7CFC00; color: #666;" value="#7CFC00" {{'selected' if color=='#7CFC00'}}>LawnGreen</option>
+	<option style="background: #9ACD32; color: #fff;" value="#9ACD32" {{'selected' if color=='#9ACD32'}}>YellowGreen</option>
+	<option style="background: #006400; color: #fff;" value="#006400" {{'selected' if color=='#006400'}}>DarkGreen</option>
+	<option style="background: #F0F; 	color: #fff;" value="#F0F"    {{'selected' if color=='#F0F'   }}>Magenta</option>
+	<option style="background: #800080; color: #fff;" value="#800080" {{'selected' if color=='#800080'}}>Purple</option>
+	<option style="background: #BC8F8F; color: #fff;" value="#BC8F8F" {{'selected' if color=='#BC8F8F'}}>RosyBrown</option>
+</select>
+</form>

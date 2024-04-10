@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block head_extra %}
+<script src="{{ url_for('static', filename= 'js/game.js') }}"></script>
+<script type="module">
+import SWorker from "{{ url_for('static', filename= 'js/sww.min.js') }}"
+import { default as ColorGame, GetColorGame } from "{{ url_for('static', filename= 'js/GetColorGame.js') }}"
+import {Bottle} from "{{ url_for('static', filename= 'js/GetColorGame.js') }}"
+import * as Solver from "{{ url_for('static', filename= 'js/GetColorSolver.js') }}"
+import { default as MurmurHash } from "{{ url_for('static', filename= 'js/MurmurHash.js') }}"
+
+function stringify(obj) {
+  let cache = [];
+  let str = JSON.stringify(obj, function(key, value) {
+    if (typeof value === "object" && value !== null) {
+      if (cache.indexOf(value) !== -1) {
+        // Circular reference found, discard key
+        return "<Circular reference>";
+      }
+      // Store value in our collection
+      cache.push(value);
+    }
+    return value;
+  });
+  cache = null; // reset the cache
+  return str;
+}
+var REBUILD_BOTTLES_PATH_LIST = ["/add_bottle", "/set_color", "/load_preset"];
+document.addEventListener('htmx:afterRequest', function(evt) {
+    if(evt.detail.xhr.status == 404){
+        /* Notify the user of a 404 Not Found response */
+        return alert("Error: Could Not Find Resource");
+    } 
+    if (evt.detail.successful != true) {
+        /* Notify of an unexpected error, & print error to console */
+        alert("Unexpected Error");
+        return console.error(evt);
+    }
+	//alert(stringify(evt.detail));
+    //if (evt.detail.target.id == 'game') {
+	if (REBUILD_BOTTLES_PATH_LIST.includes(evt.detail.pathInfo.requestPath)) {
+        /* Execute code on the target of the HTMX request, which will be either the hx-target attribute if set, or the triggering element itself if not set. */
+		setTimeout(()=>{
+			let bottles = getBottles($('game'));
+			//console.log("bottles=", bottles);
+			for (let bottleIdx = 0, bottleNum = bottles.length; bottleIdx < bottleNum; ++bottleIdx) {
+				let bottle = bottles[bottleIdx];
+				//console.log("bottle[" + bottleIdx + "]=", bottle);
+				if (isEmpty(bottle.id)) {
+					bottle.id = "bottle" + Math.random();
+				}
+			}
+			ColorGame.bottles = bottles;
+			/*ColorGame.pickBottle("bottle_7");
+			ColorGame.pourInBottle("bottle_9");
+			ColorGame.pourInBottle("bottle_10");*/
+			console.log(ColorGame.hashCode());
+			console.log(ColorGame.bottles);
+		}, 1);
+
+		document.querySelectorAll('.bottle button').forEach(button => {
+		  button.addEventListener('click', bottleAction);
+		});
+    }
+	/*SWorker.run(
+		function(bottles) {
+			return bottles;
+		}, [ stringify(getBottles($('game'))) ])
+	  .then(console.log)
+	  .catch(console.error)*/
+});
+
+function bottleAction(e) {
+	let game = ColorGame;
+    e = e || window.event;
+    var btn = e.target || e.srcElement || e;
+	// If the node is a text node, get the parent
+    if (btn.nodeType == 3) btn = btn.parentNode;
+
+	bottleSelect(btn, game);
+}
+
+function showGameFromLink(e) {
+    e = e || window.event;
+    var btn = e.target || e.srcElement || e;
+	// If the node is a text node, get the parent
+    if (btn.nodeType == 3) btn = btn.parentNode;
+
+	const gameStr = btn.getAttribute('value');
+	console.log(gameStr);
+	const gameJSON = unescapeText(gameStr);
+	console.log(gameJSON);
+	const game = GetColorGame.fromJSON(gameJSON);
+	console.log(game);
+	updateInterface($('game'), game);
+}
+
+function gameSolve(e) {
+	let game = ColorGame;
+	const solver = new Solver.GetColorSolver(game);
+	let algorithm = null;
+	const selectAlgorithm = document.querySelector('[name="algorithm"]');
+	if (selectAlgorithm && selectAlgorithm.value) {
+		switch(selectAlgorithm.value) {
+			case 'dfs': algorithm = new Solver.DepthFirstSearchAlgorithm(); break;
+			case 'bfs': algorithm = new Solver.BreadthFirstSearchAlgorithm(); break;
+			case 'astar': algorithm = new Solver.AStarAlgorithm(); break;
+		}
+	}
+
+	$('solution').innerHTML = 'finding solution...';
+
+	setTimeout(()=>{
+		//const algorithm = solver.solve(new Solver.BreadthFirstSearchAlgorithm());
+		//const algorithm = solver.solve(new Solver.DepthFirstSearchAlgorithm());
+		//const algorithm = solver.solve(new Solver.AStarAlgorithm());
+		let solution = null;
+		const startTime = performance.now();
+		if (algorithm && solver.solve(algorithm)) {
+			solution = algorithm.getSolution();
+		}
+		const endTime = performance.now();
+
+		//let solution = algorithm ? algorithm.getSolution() : null;
+		if (solution && typeof solution.pourFromBottleIdx == 'number') {
+			let text = "";
+			let solvedState = solution;
+			while (solvedState && typeof solvedState.pourFromBottleIdx == 'number') {
+				const pourFrom = solvedState.pourFromBottleIdx;
+				const pourTo = solvedState.pourInBottleIdx;
+				const game = solvedState.previousState ? solvedState.previousState.game : solvedState.game;
+				const {color:srcColor, count:srcCount} = game.getRawBottle(pourFrom).getTopColor();
+				//console.log(game.bottles);
+				const color = game.mColors[srcColor];
+				const previewGame = game;//.fastClone();
+				previewGame.pickBottleIdx(pourFrom);
+				const previewValue = escapeText(JSON.stringify(previewGame));
+				text = '<li><span style="color:' + color + '">&#x25A0;</span>&times;' + srcCount + ' from #' + pourFrom + ' to #' + pourTo + " - <a class=\"preview\" value=\"" + previewValue + "\">show</a></li>\n" + text;
+				solvedState = solvedState.previousState;
+			}
+			$('solution').innerHTML = humanFormatDeltaTime(endTime - startTime) + ' passed.<br><ol type="1">' + text + '</ol>';
+		} else {
+			$('solution').innerHTML = humanFormatDeltaTime(endTime - startTime) + ' passed.<br>no solution';
+		}
+		$('solution').querySelectorAll('a.preview').forEach(link => {
+			link.addEventListener('click', showGameFromLink);
+		});
+	}, 1);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+	ColorGame.hashFunc = MurmurHash;
+	document.querySelectorAll('.bottle button').forEach(button => {
+	  button.addEventListener('click', bottleAction);
+	});
+	document.querySelectorAll('button[name="solve"]').forEach(button => {
+	  button.addEventListener('click', gameSolve);
+	});
+});
+</script>
+{% endblock %}
+
+{% block content %}
+    <h1>{% block title %} Get Color solver {% endblock %}</h1>
+	
+	<div id="game">
+		<h3>Bottles</h3>
+	</div>
+	<button type="button" hx-get="/add_bottle" hx-target="#game" hx-swap="beforeend">Add bottle</button>
+	<button type="button" hx-get="/load_preset" hx-vals='{"name": "debug"}' hx-target="#game" hx-swap="innerHTML">Load preset</button>
+	<button type="button" name="solve">Solve!</button>
+	<select class="selectpicker show-tick" name="algorithm">
+		<option value="dfs" selected>Depth First search (fast)</option>
+		<option value="bfs">Breadth First search (very slow)</option>
+		<option value="astar">A* (slow)</option>
+	</select>
+	<div id="solution">
+	</div>
+{% endblock %}

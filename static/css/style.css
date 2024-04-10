@@ -1,0 +1,68 @@
+body {
+	background-color: DarkSlateGray;
+	color: Snow;
+}
+h1, h2, h3   {color: HoneyDew;}
+
+/* links without href don't get the pointer by default */
+a {
+	cursor: pointer;
+}
+
+.bottle {
+	float: left;
+	margin: 10px 10px 0 0;
+	text-align: center;
+}
+
+.bottle button {
+	font-family: monospace, monospace;
+}
+
+.bottle table {
+	border-collapse: collapse;
+}
+
+.bottle table tr {
+	padding: 0;
+	border: 0;
+}
+
+.bottle table tr td {
+	border: 0;
+	border-left: 3px solid black;
+	border-right: 3px solid black;
+	width: 44px;
+	height: 66px;
+	padding: 0 1px 0 1px;
+}
+
+.bottle table tr:last-child td {
+	border-bottom: 3px solid black;
+	padding-bottom: 1px;
+}
+
+.bottle.picked table tr td {
+	border-color: silver;
+}
+
+.bottleColor {
+	color: transparent;
+	border: 1px solid #666;
+	background-color: transparent;
+	width: 100%;
+	height: 100%;
+	position: relative;
+	display: block;
+}
+
+#game {
+	clear: both;
+	border: 3px dotted green;
+	padding: 1em;
+}
+#game::after {
+	content: "";
+	clear: both;
+	display: table;
+}
