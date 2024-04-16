@@ -11,7 +11,7 @@ a {
 
 .bottle {
 	float: left;
-	margin: 10px 10px 0 0;
+	margin: 0 0.5em 0 0;
 	text-align: center;
 }
 
@@ -32,8 +32,8 @@ a {
 	border: 0;
 	border-left: 3px solid black;
 	border-right: 3px solid black;
-	width: 44px;
-	height: 66px;
+	width: 3em;
+	height: 4em;
 	padding: 0 1px 0 1px;
 }
 
@@ -59,10 +59,42 @@ a {
 #game {
 	clear: both;
 	border: 3px dotted green;
+	border-radius: 1em;
 	padding: 1em;
 }
 #game::after {
 	content: "";
 	clear: both;
 	display: table;
+}
+
+.window {
+	border: 3px dotted green;
+	border-radius: 1em;
+	border-top-left-radius: 0px;
+	margin-left: 1em;
+	padding: 0.5em;
+	background-color: SlateGray;
+	position: absolute;
+	visibility: collapse;
+}
+
+.window .bottle {
+	margin: 0 3px 0 0;
+	font-size: smaller;
+}
+
+.window .bottle table tr td {
+	width: 1em;
+	height: 1em;
+	border-width: 1px;
+	padding: 0;
+}
+
+.window .bottle.picked table tr td {
+	border-color: silver;
+	border-width: 2px;
+}
+.window .bottle button {
+	display: none;
 }

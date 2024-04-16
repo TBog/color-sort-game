@@ -61,6 +61,8 @@ document.addEventListener('htmx:afterRequest', function(evt) {
 		document.querySelectorAll('.bottle button').forEach(button => {
 		  button.addEventListener('click', bottleAction);
 		});
+		
+		$('solution').innerHTML = '';
     }
 	/*SWorker.run(
 		function(bottles) {
@@ -92,7 +94,36 @@ function showGameFromLink(e) {
 	console.log(gameJSON);
 	const game = GetColorGame.fromJSON(gameJSON);
 	console.log(game);
-	updateInterface($('game'), game);
+	
+	let gameDiv = $('game');
+	let previewDiv = $('preview');
+	if (!previewDiv) {
+		previewDiv = gameDiv.cloneNode(true);
+		gameDiv.parentNode.appendChild(previewDiv);
+	} else {
+		const oldPreviewDiv = previewDiv;
+		previewDiv = gameDiv.cloneNode(true);
+		previewDiv.id = oldPreviewDiv.id;
+		previewDiv.className = oldPreviewDiv.className;
+		previewDiv.querySelectorAll('h1, h2, h3').forEach(e => e.remove());
+		
+		oldPreviewDiv.replaceWith(previewDiv);
+	}
+	
+	let rect = btn.getBoundingClientRect();
+	let posX = rect.width;
+	let posY = 0;
+	
+	const offset = getOffset(btn);
+	posX += offset.left;
+	posY += offset.top;
+	
+	previewDiv.style.position = 'absolute';
+	previewDiv.style.left = posX + 'px';
+	previewDiv.style.top = posY + 'px';
+	previewDiv.style.visibility = 'visible';
+	previewDiv.addEventListener('click', function() { this.style.visibility = 'collapse'; });
+	updateInterface(previewDiv, game);
 }
 
 function gameSolve(e) {
@@ -163,6 +194,8 @@ document.addEventListener('DOMContentLoaded', function(){
 {% block content %}
     <h1>{% block title %} Get Color solver {% endblock %}</h1>
 	
+	<div id="preview" class="window">
+	</div>
 	<div id="game">
 		<h3>Bottles</h3>
 	</div>

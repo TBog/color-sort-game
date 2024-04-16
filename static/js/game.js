@@ -2,7 +2,7 @@ function updateInterface(gameDiv, ColorGame) {
 	let bottles = ColorGame.bottles;
 	for (let bottleIdx = 0, bottleNum = bottles.length; bottleIdx < bottleNum; ++bottleIdx) {
 		let bottle = bottles[bottleIdx];
-		let table = gameDiv.querySelector("[id='" + bottle.id + "']");
+		let table = gameDiv.querySelector("table[name='" + bottle.id + "']");
 		
 		{
 			let bottleForm = table.closest("form");
@@ -44,15 +44,17 @@ function getBottles(gameDiv) {
 	//console.log("tables=", tables);
 	for (let tableIdx = 0, tableNum = tables.length; tableIdx < tableNum; ++tableIdx) {
 		let table = tables[tableIdx];
-		if (isEmpty(table.id)) {
-			table.id = "bottle_" + tableIdx;
+		let bottleId = table.getAttribute('name');
+		if (isEmpty(bottleId)) {
+			bottleId = "bottle_" + tableIdx;
+			table.setAttribute('name', bottleId);
 			let bottleForm = table.closest("form");
 			const bottleTitleSpan = document.createElement('span');
 			bottleTitleSpan.appendChild(document.createTextNode('#' + tableIdx));
 			bottleForm.closest('div').insertAdjacentElement('afterbegin', bottleTitleSpan);
 			let hiddenInput = bottleForm.querySelector('input[name="bottle"]');
 			if (hiddenInput) {
-				hiddenInput.value = table.id;
+				hiddenInput.value = bottleId;
 			}
 		}
 		let bottle = getBottle(table);
@@ -63,7 +65,7 @@ function getBottles(gameDiv) {
 
 function getBottle(table) {
 	let bottle = {};
-	bottle.id = table.id;
+	bottle.id = table.getAttribute('name');
 	bottle.colors = [];
 	for (let rowIdx = 0, rowNum = table.rows.length; rowIdx < rowNum; ++rowIdx) {
 		let row = table.rows[rowIdx];
